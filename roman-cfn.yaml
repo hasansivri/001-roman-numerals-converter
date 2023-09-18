@@ -1,46 +1,64 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: |
-  This template creates an EC2 instance to run static web site with Python Flask
+  CloudFormation Template for Roman Numerals Converter Application. 
+  This template creates Python Flask Web Application on Amazon Linux 2023 
+  EC2 Instance with custom security group allowing http connections on port 80 ,
+  8080 and SSH connection on port 22. Roman Numerals Converter Application is downloaded from Github repository,
+  then installed on Flask.
 Parameters:
-  
+ latestAmiId:
+    Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
+    Default: '/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-6.1-x86_64' 
+ keyName:
+    Description: Chose your key pair 
+    Type: AWS::EC2::KeyPair::KeyName
+    Default: secondkey 
+
 Resources: 
   HasanInstance:
     Type: AWS::EC2::Instance
     Properties:
-      ImageId: ami-04cb4ca688797756f
+      ImageId: !Ref latestAmiId
       InstanceType: t2.micro
-      KeyName: secondkey
+      KeyName: !Ref keyName
       SecurityGroups: 
         !Ref HasanInstanceSG
         
       Tags: 
        - Key: Name  
-         Value: !Sub Hasan {AWS::StackName} 
+         Value: !Sub Hasan of {AWS::StackName} Stack
 
-      UserData: 
-        Fn::Base64:
-          !Sub |
+      UserData: !Base64 |
           #!/bin/bash
           yum update -y
           yum install python3 -y
           pip3 install Flask
+          yum install git -y
+          cd /home/ec2-user
+          wget -P templates https://raw.githubusercontent.com/hasansivri/001-roman-numerals-converter/main/templates/index.html
+          wget -P templates https://raw.githubusercontent.com/hasansivri/001-roman-numerals-converter/main/templates/result.html
+          wget https://raw.githubusercontent.com/hasansivri/001-roman-numerals-converter/main/roman-numerals-converter-app.py
+          python3 app.py
 
           
-
   HasanInstanceSG:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: Allow SHH  # Required
+      GroupDescription: Allow SHH, HTTP and port 8080  # Required
       GroupName: hasansecurityportfolio
       SecurityGroupIngress: 
-        IpProtocol: tcp
-        FromPort: 22
-        ToPort: 22
-        CidrIp: 0.0.0.0/0
-        IpProtocol: tcp
-        FromPort: 80
-        ToPort: 80
-        CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 8080
+          ToPort: 8080
+          CidrIp: 0.0.0.0/0
     
       Tags: 
         - Key: Name
@@ -51,8 +69,7 @@ Outputs:
  WebsiteURL:
    Description: 001-Roman-Numerals-Converter Application URL
    Value: !Sub 
-     - http://${PublicAddress}
-      - PublicAddress: !GetAtt HasanInstance.PublicDnsName
-   
+     - http://${PIA}
+     - PIA: !GetAtt HasanInstance.PublicDnsName
+    
   
-   
