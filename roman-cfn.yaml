@@ -6,10 +6,10 @@ Description: |
   8080 and SSH connection on port 22. Roman Numerals Converter Application is downloaded from Github repository,
   then installed on Flask.
 Parameters:
- latestAmiId:
+  latestAmiId:
     Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
     Default: '/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-6.1-x86_64' 
- keyName:
+  keyName:
     Description: Chose your key pair 
     Type: AWS::EC2::KeyPair::KeyName
     Default: secondkey 
@@ -21,31 +21,31 @@ Resources:
       ImageId: !Ref latestAmiId
       InstanceType: t2.micro
       KeyName: !Ref keyName
-      SecurityGroups: 
-        !Ref HasanInstanceSG
-        
+      SecurityGroupIds: 
+        - !Ref HasanInstanceSG
+      
       Tags: 
-       - Key: Name  
-         Value: !Sub Hasan of {AWS::StackName} Stack
+        - Key: Name  
+          Value: !Sub Hasan of {AWS::StackName} Stack
 
       UserData: !Base64 |
-          #!/bin/bash
-          yum update -y
-          yum install python3 -y
-          pip3 install Flask
-          yum install git -y
-          cd /home/ec2-user
-          wget -P templates https://raw.githubusercontent.com/hasansivri/001-roman-numerals-converter/main/templates/index.html
-          wget -P templates https://raw.githubusercontent.com/hasansivri/001-roman-numerals-converter/main/templates/result.html
-          wget https://raw.githubusercontent.com/hasansivri/001-roman-numerals-converter/main/roman-numerals-converter-app.py
-          python3 app.py
+        #! /bin/bash
+        yum update -y
+        yum install python3 -y
+        yum install python3-pip -y
+        pip3 install flask
+        yum install git -y
+        cd /home/ec2-user
+        wget -P templates https://raw.githubusercontent.com/hasansivri/001-roman-numerals-converter/main/templates/index.html
+        wget -P templates https://raw.githubusercontent.com/hasansivri/001-roman-numerals-converter/main/templates/result.html
+        wget https://raw.githubusercontent.com/hasansivri/001-roman-numerals-converter/main/app.py
+        python3 app.py
 
           
   HasanInstanceSG:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Allow SHH, HTTP and port 8080  # Required
-      GroupName: hasansecurityportfolio
       SecurityGroupIngress: 
         - IpProtocol: tcp
           FromPort: 22
@@ -66,10 +66,10 @@ Resources:
      
 
 Outputs:
- WebsiteURL:
-   Description: 001-Roman-Numerals-Converter Application URL
-   Value: !Sub 
-     - http://${PIA}
-     - PIA: !GetAtt HasanInstance.PublicDnsName
+  WebsiteURL:
+    Description: 001-Roman-Numerals-Converter Application URL
+    Value: !Sub 
+      - http://${PIA}
+      - PIA: !GetAtt HasanInstance.PublicDnsName
     
   
